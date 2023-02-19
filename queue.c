@@ -118,30 +118,89 @@ int q_size(struct list_head *head)
 /* Delete the middle node in queue */
 bool q_delete_mid(struct list_head *head)
 {
-    // https://leetcode.com/problems/delete-the-middle-node-of-a-linked-list/
+    if (!head || list_empty(head))
+        return false;
+    size_t len = q_size(head), count = -1;
+    element_t *entry, *safe;
+    list_for_each_entry_safe (entry, safe, head, list) {
+        ++count;
+        if (count == len / 2) {
+            list_del(&entry->list);
+            q_release_element(entry);
+            break;
+        }
+    }
     return true;
 }
 
 /* Delete all nodes that have duplicate string */
 bool q_delete_dup(struct list_head *head)
 {
-    // https://leetcode.com/problems/remove-duplicates-from-sorted-list-ii/
+    if (!head)
+        return false;
+    bool flag = 0;
+    element_t *entry, *safe;
+    list_for_each_entry_safe (entry, safe, head, list) {
+        if (&safe->list == head) {
+            if (flag == 1) {
+                list_del(&entry->list);
+                q_release_element(entry);
+            }
+            break;
+        }
+
+        if (strcmp(entry->value, safe->value) == 0) {
+            list_del(&entry->list);
+            q_release_element(entry);
+            flag = 1;
+        } else if (flag == 1) {
+            list_del(&entry->list);
+            q_release_element(entry);
+            flag = 0;
+        }
+    }
     return true;
 }
 
 /* Swap every two adjacent nodes */
 void q_swap(struct list_head *head)
 {
-    // https://leetcode.com/problems/swap-nodes-in-pairs/
+    if (!head || list_empty(head))
+        return;
+    q_reverseK(head, 2);
 }
 
 /* Reverse elements in queue */
-void q_reverse(struct list_head *head) {}
+void q_reverse(struct list_head *head)
+{
+    if (!head || list_empty(head))
+        return;
+    struct list_head *node, *safe;
+    list_for_each_safe (node, safe, head) {
+        list_move(node, head);
+    }
+    return;
+}
 
 /* Reverse the nodes of the list k at a time */
 void q_reverseK(struct list_head *head, int k)
 {
-    // https://leetcode.com/problems/reverse-nodes-in-k-group/
+    if (!head || list_empty(head))
+        return;
+    struct list_head *node, *safe, *head_from = head, tmp;
+    INIT_LIST_HEAD(&tmp);
+    size_t count = 0;
+    list_for_each_safe (node, safe, head) {
+        ++count;
+        if (count == k) {
+            list_cut_position(&tmp, head_from, node);
+            q_reverse(&tmp);
+            list_splice_init(&tmp, head_from);
+            head_from = safe->prev;
+            count = 0;
+        }
+    }
+    return;
 }
 
 /* Sort elements of queue in ascending order */
