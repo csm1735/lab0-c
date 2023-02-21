@@ -204,7 +204,64 @@ void q_reverseK(struct list_head *head, int k)
 }
 
 /* Sort elements of queue in ascending order */
-void q_sort(struct list_head *head) {}
+struct list_head *mergeTwoList(struct list_head *l1, struct list_head *l2)
+{
+    if (!l2)
+        return l1;
+    if (!l1)
+        return l2;
+
+    element_t *n1 = list_entry(l1, element_t, list);
+    element_t *n2 = list_entry(l2, element_t, list);
+
+    if (strcmp(n1->value, n2->value) < 0) {
+        l1->next = mergeTwoList(l1->next, l2);
+        return l1;
+    } else {
+        l2->next = mergeTwoList(l1, l2->next);
+        return l2;
+    }
+}
+
+struct list_head *mergeSortList(struct list_head *head)
+{
+    // merge sort
+    if (!head || !head->next)
+        return head;
+
+    struct list_head *fast = head->next;
+    struct list_head *slow = head;
+
+    // split list
+    while (fast && fast->next) {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+    fast = slow->next;
+    slow->next = NULL;
+
+    // sort each list
+    struct list_head *l1 = mergeSortList(head);
+    struct list_head *l2 = mergeSortList(fast);
+
+    // merge sorted l1 and sorted l2
+    return mergeTwoList(l1, l2);
+}
+
+void q_sort(struct list_head *head)
+{
+    if (!head || list_empty(head))
+        return;
+    head->prev->next = NULL;
+    head->next = mergeSortList(head->next);
+
+    struct list_head *cur;
+    for (cur = head; cur->next; cur = cur->next)
+        cur->next->prev = cur;
+    cur->next = head;
+    head->prev = cur;
+    return;
+}
 
 /* Remove every node which has a node with a strictly greater value anywhere to
  * the right side of it */
