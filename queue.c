@@ -168,6 +168,7 @@ void q_swap(struct list_head *head)
     if (!head || list_empty(head))
         return;
     q_reverseK(head, 2);
+    return;
 }
 
 /* Reverse elements in queue */
