@@ -36,7 +36,7 @@ void q_free(struct list_head *l)
 }
 
 /* Insert an element at head of queue */
-element_t *new_element(char *s)
+static inline element_t *new_element(char *s)
 {
     element_t *element = malloc(sizeof(*element));
     if (!element) {
@@ -207,21 +207,37 @@ void q_reverseK(struct list_head *head, int k)
 /* Sort elements of queue in ascending order */
 struct list_head *mergeTwoList(struct list_head *l1, struct list_head *l2)
 {
-    if (!l2)
-        return l1;
-    if (!l1)
-        return l2;
-
+    struct list_head *head, *tmp;
     element_t *n1 = list_entry(l1, element_t, list);
     element_t *n2 = list_entry(l2, element_t, list);
-
     if (strcmp(n1->value, n2->value) < 0) {
-        l1->next = mergeTwoList(l1->next, l2);
-        return l1;
+        tmp = l1;
+        l1 = l1->next;
     } else {
-        l2->next = mergeTwoList(l1, l2->next);
-        return l2;
+        tmp = l2;
+        l2 = l2->next;
     }
+    head = tmp;
+
+    while (l1 && l2) {
+        n1 = list_entry(l1, element_t, list);
+        n2 = list_entry(l2, element_t, list);
+        if (strcmp(n1->value, n2->value) < 0) {
+            tmp->next = l1;
+            tmp = tmp->next;
+            l1 = l1->next;
+        } else {
+            tmp->next = l2;
+            tmp = tmp->next;
+            l2 = l2->next;
+        }
+    }
+
+    if (l1)
+        tmp->next = l1;
+    if (l2)
+        tmp->next = l2;
+    return head;
 }
 
 struct list_head *mergeSortList(struct list_head *head)
